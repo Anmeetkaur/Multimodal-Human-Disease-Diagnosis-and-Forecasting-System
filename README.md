@@ -1,222 +1,308 @@
-MediFuse — Multimodal Health Risk Assessment AI
-Project Team ID: MP2025CSE87
-Graphic Era (Deemed to be University)
-Team Members:
+# 🏥 MediFuse — Multimodal Health Risk Assessment AI
 
-Sangam Sharma — Frontend Lead
-Anmeet Kaur — Data Preprocessing & Encoders
-Aaradhya Gupta — Fusion Model & XAI
-Mansi Agarwal — Backend & MLOps Lead
-Guide: Mr. Kireet Joshi
-1. Overview — What is MediFuse?
-MediFuse is an AI-powered health risk analysis system that takes three inputs:
+**Project Team ID:** MP2025CSE87  
+**Institution:** Graphic Era (Deemed to be University)  
+**Guide:** Mr. Kireet Joshi  
 
-Symptom Text (NLP via DistilBERT)
-Blood Report / Lifestyle Values (MLP Encoder)
-Wearable/Signal Data (LSTM Encoder)
-The system predicts probabilities for diseases and provides:
+---
 
-Risk percentages
-Explainable AI (SHAP-based)
-Top contributing clinical factors
-Nearby hospitals
-Printable health report
-Disclaimer:
-MediFuse does not diagnose diseases. It only provides risk assessment.
-Final decision is always made by a doctor.
+# 📌 Overview
 
-2. Folder Structure
+MediFuse is an AI-powered multimodal health risk assessment system that analyzes:
 
+- 📝 Symptom Text (NLP via DistilBERT)
+- 🧪 Blood Report / Lifestyle Values (MLP Encoder)
+- ⌚ Wearable / Signal Data (LSTM Encoder)
 
+The system predicts disease risk probabilities and provides:
+
+- 📊 Risk percentages  
+- 🧠 Explainable AI (SHAP-based explanations)  
+- 🔬 Top contributing clinical factors  
+- 🏥 Nearby hospital recommendations  
+- 🖨 Printable health report  
+
+> ⚠️ **Disclaimer:**  
+> MediFuse does NOT diagnose diseases.  
+> It only provides AI-based risk assessment.  
+> Final medical decisions must always be made by a certified doctor.
+
+---
+
+# 🧠 How MediFuse Works
+
+## 🔹 Step 1 — User Inputs
+
+- Symptom text  
+- Blood / lifestyle parameters  
+- Wearable time-series data  
+
+---
+
+## 🔹 Step 2 — Modality-Specific Encoders
+
+Each input type is processed by a separate neural network:
+
+| Modality | Model Used | Output |
+|----------|------------|--------|
+| Text     | DistilBERT | 768-dim vector |
+| Tabular  | MLP        | 128-dim vector |
+| Signal   | LSTM       | 128-dim vector |
+
+---
+
+## 🔹 Step 3 — Cross-Attention Fusion
+
+All embeddings are:
+
+- Projected to 256 dimensions  
+- Fused using multi-head cross-attention  
+- Weighted via modality gating  
+
+Final Output → Unified 256-dimensional representation  
+
+---
+
+## 🔹 Step 4 — Disease Prediction
+
+A classification head outputs:
+
+- 6 disease probability scores  
+- Sigmoid-scaled risk percentages  
+
+---
+
+## 🔹 Step 5 — Explainable AI (SHAP)
+
+SHAP identifies:
+
+- Features increasing risk (🔴 red bars)
+- Protective features (🟢 green bars)
+
+This ensures transparency and clinical trust.
+
+---
+
+# 🏗 Folder Structure
+
+```
 D:\medifuse-backend\
 │
 ├── main.py              # FastAPI backend + Full AI pipeline
 ├── medifuse.html        # Complete frontend UI
 ├── api.js               # Frontend ↔ Backend connection
 └── requirements.txt     # Python dependencies
-3. Installation Guide
-3.1. Prerequisites
-Install the following before starting:
+```
 
-Python 3.9+
-Node.js (optional, for frontend improvements)
-pip (latest version recommended)
-A modern browser (Chrome/Edge)
-Git (optional)
-4. Backend Setup (FastAPI + Python)
-Step 1 — Create Virtual Environment
+---
 
+# ⚙️ Installation Guide
 
+## 1️⃣ Prerequisites
+
+- Python 3.9+
+- pip (latest version recommended)
+- Modern Browser (Chrome / Edge)
+- Git (optional)
+- Node.js (optional)
+
+---
+
+# 🚀 Backend Setup (FastAPI)
+
+## Step 1 — Create Virtual Environment
+
+```bash
 python -m venv venv
-Activate it:
+```
 
-Windows:
+Activate:
 
-
+### Windows
+```bash
 venv\Scripts\activate
-Mac/Linux:
+```
 
-
+### Mac/Linux
+```bash
 source venv/bin/activate
-Step 2 — Install Dependencies
+```
 
+---
 
+## Step 2 — Install Dependencies
+
+```bash
 pip install -r requirements.txt
-These include:
+```
 
-FastAPI
-Uvicorn
-PyTorch
-Transformers (DistilBERT)
-NumPy
-Scikit-learn
-Python-dotenv
-Step 3 — Run Server
+Dependencies include:
 
+- FastAPI  
+- Uvicorn  
+- PyTorch  
+- Transformers (DistilBERT)  
+- NumPy  
+- Scikit-learn  
+- Python-dotenv  
 
+---
+
+## Step 3 — Run Server
+
+```bash
 uvicorn main:app --reload --port 8000
-If successful, you will see:
+```
 
+If successful:
 
-
+```
 Running on http://127.0.0.1:8000
-Step 4 — Test Backend
+```
+
+---
+
+## Step 4 — Test Backend
+
 Open in browser:
 
-API Docs: http://localhost:8000/docs
-Health Check: http://localhost:8000/health
-5. Frontend Setup
-The frontend is entirely inside medifuse.html.
+- API Docs → http://localhost:8000/docs  
+- Health Check → http://localhost:8000/health  
 
-Step 1 — Open the File
-Simply double-click:
+---
 
+# 💻 Frontend Setup
 
+The frontend is fully contained in:
 
+```
 medifuse.html
-or open via:
+```
 
-Right Click → Open With → Chrome / Edge.
+## Step 1 — Open the File
 
-Step 2 — Backend Auto-Detection
-When the frontend loads:
+Double-click:
 
-If backend is connected → Green “Connected” banner
-If not → Yellow Demo Mode
-(UI works offline using sample data)
-No configuration needed.
+```
+medifuse.html
+```
 
-6. How MediFuse Works (Full Pipeline)
-Step 1 — User Inputs
-Symptom text
-Blood/lifestyle values
-Wearable data
-Step 2 — Encoders (Anmeet’s Work)
-Three separate neural networks process the three modalities:
+or Right Click → Open With → Chrome / Edge
 
-DistilBERT → 768‑dim text vector
-MLP → 128‑dim tabular vector
-LSTM → 128‑dim signal vector
-Step 3 — Cross-Attention Fusion (Aaradhya’s Work)
-All vectors are projected to 256 dimensions and fused using:
+## Step 2 — Backend Auto Detection
 
-Multi-head cross-attention
-Modality gating (dynamic weighting)
-Final 256‑dim unified representation
-Step 4 — Disease Prediction
-Classifier outputs 6 disease probabilities (sigmoid scaled).
+- If backend connected → Green “Connected” banner  
+- If backend not running → Yellow “Demo Mode”  
 
-Step 5 — Explainability (SHAP)
-For each feature:
+No manual configuration required.
 
-AI temporarily removes the feature
-Checks how much prediction changes
-Shows red (risk increasing) / green (protective) bars
-Step 6 — Results Shown on UI
-Risk gauge
-Disease list
-SHAP bar chart
-Hospital recommendation
-Printable report
-7. API Endpoints
-GET /
-Returns model info.
+---
 
-GET /health
-Simple health check.
+# 🔌 API Endpoints
 
-POST /predict
-Main endpoint — runs full AI pipeline.
+| Method | Endpoint        | Description |
+|--------|-----------------|-------------|
+| GET    | /              | Model info |
+| GET    | /health        | Health check |
+| POST   | /predict       | Full AI pipeline |
+| POST   | /encode        | Encoded vectors only |
+| GET    | /hospitals     | Hospital finder |
+| POST   | /auth/login    | Admin authentication |
+| GET    | /admin/stats   | Admin dashboard stats |
 
-POST /encode
-Returns only encoded vectors (for debugging).
+---
 
-GET /hospitals
-Hospital finder.
+# 👩‍💻 Team Responsibilities
 
-POST /auth/login
-User authentication for Admin panel.
+### 🟢  Frontend Lead
+- medifuse.html UI
+- Forms & animations
+- SHAP visualization
+- Results dashboard
+- Report generator
+- Hospital finder
+- Admin panel
 
-GET /admin/stats
-Admin dashboard stats.
+### 🔵 Encoders
+- DistilBERT (text encoder)
+- MLP (tabular encoder)
+- LSTM (signal encoder)
+- Data normalization
+- Time-series processing
 
-8. Team Responsibilities
-Member 1 — Sangam (Frontend Lead)
-medifuse.html (UI)
-Forms, charts, animations
-SHAP visualizations
-Results screen, report generator
-Hospital finder
-Admin dashboard
-Member 2 — Anmeet (Encoders)
-DistilBERT (text)
-MLP (tabular)
-LSTM (signal)
-Data normalization + time-series construction
-Member 3 — Aaradhya (Fusion + XAI)
-CrossAttentionFusion
-Modality-gated fusion
-Disease prediction head
-SHAP explainability
-Member 4 — Mansi (Backend & MLOps)
-FastAPI server
-All endpoints
-Docker setup
-Deployment configuration
-requirements.txt
-Backend–frontend integration
-9. Running the Complete System
-Step 1
-Start the backend:
+### 🟣 Fusion + XAI
+- CrossAttentionFusion module
+- Modality gating
+- Disease prediction head
+- SHAP explainability
 
+### 🟠 Backend & MLOps
+- FastAPI server
+- All API endpoints
+- Docker setup
+- Deployment configuration
+- requirements.txt
+- Backend–frontend integration
 
+---
 
+# 🏁 Running the Complete System
+
+## Step 1
+```bash
 uvicorn main:app --reload
-Step 2
-Open the frontend:
+```
 
+## Step 2
+Open:
 
-
+```
 medifuse.html
-Step 3
+```
+
+## Step 3
 Enter:
+- Symptoms
+- Blood values
+- Wearable data
 
-Symptoms
-Blood values
-Wearable data
-Step 4
-Click Run AI Diagnosis.
+## Step 4
+Click:
 
-You will get:
+```
+Run AI Diagnosis
+```
 
-Disease probabilities
-SHAP explanations
-Hospital suggestions
-Full report
-10. Important Concepts for Presentation
-Multimodal AI → text + tabular + signals
-Why 3 encoders? → each input has different structure
-Cross-attention → lets modalities influence each other
-SHAP XAI → builds doctor trust
-DistilBERT → lighter and faster than BERT
-Risk assessment vs diagnosis → ethical guardrails
+You will receive:
+
+- Disease probabilities  
+- SHAP explanations  
+- Hospital suggestions  
+- Printable report  
+
+---
+
+# 🔬 Core Concepts
+
+- Multimodal AI → text + tabular + signals  
+- Separate encoders → each modality has different structure  
+- Cross-attention → modalities influence each other  
+- SHAP XAI → builds medical trust  
+- DistilBERT → lighter & faster than BERT  
+- Risk assessment ≠ Diagnosis (ethical AI guardrails)
+
+---
+
+# 📜 License
+
+This project is developed for academic and research purposes.
+
+---
+
+# ❤️ Built With
+
+- Python  
+- FastAPI  
+- PyTorch  
+- Transformers  
+- HTML/CSS/JavaScript  

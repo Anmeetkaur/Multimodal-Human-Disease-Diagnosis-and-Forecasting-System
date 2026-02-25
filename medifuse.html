@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediFuse — Multimodal Disease Diagnosis & Forecasting</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8; --surface: #ffffff; --surface-2: #e8eef5; --border: #d0dce8;
+    --navy: #0d2340; --blue: #1a5fad; --blue-mid: #2e7dd6; --blue-light: #ddeeff;
+    --teal: #0ea5a0; --teal-light: #d0f4f2; --amber: #e8a020; --red: #d63c3c;
+    --green: #2a9d5c; --text: #1a2535; --text-2: #4a6278; --text-3: #7a94a8;
+    --shadow: 0 2px 16px rgba(13,35,64,0.08); --shadow-lg: 0 8px 40px rgba(13,35,64,0.14);
+    --radius: 14px; --radius-sm: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); font-size:15px; line-height:1.6; }
+
+  /* TOPBAR */
+  .topbar { background:var(--navy); display:flex; align-items:center; justify-content:space-between; padding:0 28px; height:60px; position:sticky; top:0; z-index:100; }
+  .logo { font-family:'Fraunces',serif; font-size:22px; font-weight:700; color:#fff; }
+  .logo span { color:#5cb8ff; }
+  .nav-links { display:flex; gap:6px; list-style:none; }
+  .nav-links a { color:rgba(255,255,255,.72); text-decoration:none; font-size:13.5px; padding:6px 12px; border-radius:6px; transition:all .2s; cursor:pointer; }
+  .nav-links a:hover, .nav-links a.active { color:#fff; background:rgba(255,255,255,.12); }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .lang-btn { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:#fff; padding:5px 12px; border-radius:6px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+  .avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#2e7dd6,#0ea5a0); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+
+  /* LAYOUT */
+  .layout { display:flex; min-height:calc(100vh - 60px); }
+  .sidebar { width:230px; background:var(--surface); border-right:1px solid var(--border); padding:20px 0; flex-shrink:0; position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto; }
+  .sidebar-label { font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); padding:10px 20px 6px; }
+  .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 20px; color:var(--text-2); cursor:pointer; font-size:14px; transition:all .15s; border-left:3px solid transparent; }
+  .sidebar-item:hover { background:var(--blue-light); color:var(--blue); }
+  .sidebar-item.active { background:var(--blue-light); color:var(--blue); border-left-color:var(--blue); font-weight:500; }
+  .sidebar-icon { font-size:16px; width:20px; text-align:center; }
+  .sidebar-badge { margin-left:auto; background:var(--red); color:#fff; font-size:10px; padding:1px 6px; border-radius:20px; font-weight:600; }
+  .main { flex:1; padding:28px; max-width:calc(100% - 230px); }
+
+  /* PAGE TABS */
+  .page-tabs { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+  .page-tab { padding:7px 16px; border-radius:20px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--text-2); font-family:'DM Sans',sans-serif; transition:all .2s; font-weight:500; }
+  .page-tab:hover { border-color:var(--blue-mid); color:var(--blue); }
+  .page-tab.active { background:var(--navy); color:#fff; border-color:var(--navy); }
+
+  .screen { display:none; }
+  .screen.visible { display:block; }
+
+  /* TYPOGRAPHY */
+  .page-title { font-family:'Fraunces',serif; font-size:26px; font-weight:600; color:var(--navy); margin-bottom:4px; }
+  .page-subtitle { color:var(--text-2); font-size:14px; margin-bottom:24px; }
+  h3 { font-family:'Fraunces',serif; font-size:16px; font-weight:600; color:var(--navy); margin-bottom:12px; }
+
+  /* CARDS */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+  .card-sm { padding:16px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+  .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+
+  /* STAT CARDS */
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .stat-card.blue::before { background:var(--blue-mid); }
+  .stat-card.teal::before { background:var(--teal); }
+  .stat-card.amber::before { background:var(--amber); }
+  .stat-card.red::before { background:var(--red); }
+  .stat-label { font-size:12px; color:var(--text-3); font-weight:500; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .stat-value { font-family:'Fraunces',serif; font-size:30px; font-weight:700; color:var(--navy); }
+  .stat-sub { font-size:12px; color:var(--text-3); margin-top:4px; }
+
+  /* RISK BADGES */
+  .risk-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:12.5px; font-weight:600; }
+  .risk-low { background:#d2f5e5; color:#186640; }
+  .risk-medium { background:#fef3cd; color:#8a5a00; }
+  .risk-high { background:#fde8e8; color:#b02020; }
+  .risk-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+  /* BUTTONS */
+  .btn { display:inline-flex; align-items:center; gap:7px; padding:9px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .btn-primary { background:var(--blue); color:#fff; }
+  .btn-primary:hover { background:var(--navy); }
+  .btn-primary:disabled { background:#aaa; cursor:not-allowed; }
+  .btn-secondary { background:var(--surface); color:var(--text); border:1.5px solid var(--border); }
+  .btn-secondary:hover { border-color:var(--blue); color:var(--blue); }
+  .btn-teal { background:var(--teal); color:#fff; }
+  .btn-sm { padding:6px 14px; font-size:13px; }
+  .btn-lg { padding:13px 28px; font-size:15px; }
+
+  /* STEPS */
+  .steps { display:flex; align-items:center; gap:0; margin-bottom:28px; }
+  .step { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-3); }
+  .step-num { width:28px; height:28px; border-radius:50%; background:var(--surface-2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-3); }
+  .step.done .step-num { background:var(--green); border-color:var(--green); color:#fff; }
+  .step.active .step-num { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .step.active { color:var(--blue); font-weight:600; }
+  .step-line { flex:1; height:2px; background:var(--border); margin:0 10px; }
+  .step-line.done { background:var(--green); }
+
+  /* UPLOAD */
+  .upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:30px; text-align:center; cursor:pointer; transition:all .2s; background:var(--surface); }
+  .upload-zone:hover { border-color:var(--blue-mid); background:var(--blue-light); }
+  .upload-icon { font-size:36px; margin-bottom:10px; }
+  .upload-title { font-weight:600; color:var(--navy); margin-bottom:4px; }
+  .upload-sub { font-size:13px; color:var(--text-3); }
+
+  /* DISEASE CARD */
+  .disease-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow); }
+  .disease-name { font-weight:600; font-size:15px; color:var(--navy); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+  .prob-bar-bg { height:8px; background:var(--surface-2); border-radius:4px; overflow:hidden; margin-bottom:6px; }
+  .prob-bar-fill { height:100%; border-radius:4px; transition:width 1s ease; }
+  .prob-label { font-size:12.5px; color:var(--text-2); display:flex; justify-content:space-between; }
+
+  /* SHAP */
+  .shap-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px; }
+  .shap-feature { width:160px; text-align:right; color:var(--text-2); font-size:12.5px; flex-shrink:0; }
+  .shap-bar-container { flex:1; display:flex; align-items:center; gap:4px; }
+  .shap-bar { height:18px; border-radius:3px; min-width:4px; }
+  .shap-val { font-size:11.5px; color:var(--text-3); white-space:nowrap; }
+  .shap-pos { background:linear-gradient(90deg,#d63c3c,#f87575); }
+  .shap-neg { background:linear-gradient(90deg,#2a9d5c,#56c990); }
+
+  /* MAP */
+  .map-placeholder { background:linear-gradient(135deg,#e8eef5 0%,#d0dce8 100%); border-radius:var(--radius); height:280px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .map-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(26,95,173,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(26,95,173,.06) 1px,transparent 1px); background-size:30px 30px; }
+  .map-pin { position:absolute; width:24px; height:24px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; }
+  .map-pin-inner { width:10px; height:10px; background:#fff; border-radius:50%; transform:rotate(45deg); }
+  .map-pin.blue { background:var(--blue); }
+  .map-pin.teal { background:var(--teal); }
+  .map-pin.red { background:var(--red); }
+  .hospital-card-map { position:absolute; background:white; border-radius:10px; padding:10px 14px; box-shadow:var(--shadow-lg); font-size:12.5px; min-width:160px; }
+  .hospital-card-map strong { display:block; font-size:13px; color:var(--navy); }
+  .hospital-card-map .dist { color:var(--teal); font-weight:600; }
+
+  /* FORMS */
+  .form-group { margin-bottom:16px; }
+  .form-label { font-size:13px; font-weight:500; color:var(--text-2); margin-bottom:6px; display:block; }
+  .form-input { width:100%; padding:9px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--surface); outline:none; transition:border-color .2s; }
+  .form-input:focus { border-color:var(--blue-mid); }
+  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a94a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+  textarea.form-input { min-height:90px; resize:vertical; }
+
+  /* TABLE */
+  .data-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .data-table th { background:var(--bg); padding:10px 14px; text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); font-weight:600; border-bottom:1px solid var(--border); }
+  .data-table td { padding:11px 14px; border-bottom:1px solid var(--surface-2); color:var(--text); }
+  .data-table tr:hover td { background:var(--blue-light); }
+
+  /* LANDING */
+  .landing-hero { background:linear-gradient(135deg,var(--navy) 0%,#124a8c 100%); padding:70px 60px; border-radius:var(--radius); color:white; position:relative; overflow:hidden; margin-bottom:24px; }
+  .landing-hero::before { content:''; position:absolute; right:-60px; top:-60px; width:360px; height:360px; border-radius:50%; background:rgba(255,255,255,.04); }
+  .hero-tag { display:inline-block; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); padding:4px 14px; border-radius:20px; font-size:12.5px; margin-bottom:18px; }
+  .hero-title { font-family:'Fraunces',serif; font-size:42px; font-weight:700; line-height:1.2; margin-bottom:14px; }
+  .hero-title em { font-style:italic; color:#5cb8ff; }
+  .hero-desc { font-size:16px; opacity:.78; max-width:520px; margin-bottom:28px; line-height:1.7; }
+  .hero-btns { display:flex; gap:12px; }
+  .feature-pill { display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:7px 14px; font-size:13px; color:var(--text-2); margin:4px; box-shadow:var(--shadow); }
+
+  /* REPORT */
+  .report-preview { background:white; border:1px solid var(--border); border-radius:var(--radius); padding:32px; max-width:680px; box-shadow:var(--shadow); font-size:13.5px; }
+  .report-header { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--navy); padding-bottom:14px; margin-bottom:18px; }
+  .report-logo { font-family:'Fraunces',serif; font-size:20px; color:var(--navy); font-weight:700; }
+  .report-meta { font-size:12px; color:var(--text-2); text-align:right; }
+  .report-section { margin-bottom:18px; }
+  .report-section-title { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:8px; font-weight:600; }
+
+  .tag { display:inline-flex; align-items:center; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:500; }
+  .tag-blue { background:var(--blue-light); color:var(--blue); }
+  .tag-teal { background:var(--teal-light); color:#0a7a76; }
+  .divider { height:1px; background:var(--border); margin:20px 0; }
+  .mb-4{margin-bottom:4px} .mb-8{margin-bottom:8px} .mb-16{margin-bottom:16px} .mb-24{margin-bottom:24px}
+  .flex{display:flex} .items-center{align-items:center} .justify-between{justify-content:space-between}
+
+  /* LOGIN */
+  .login-wrapper { min-height:100vh; background:linear-gradient(135deg,#0d2340 0%,#124a8c 60%,#0d5a7a 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-card { background:var(--surface); border-radius:20px; padding:42px 40px; width:420px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+  .login-logo { font-family:'Fraunces',serif; font-size:28px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+  .login-logo span { color:var(--blue); }
+  .login-sub { color:var(--text-2); font-size:14px; margin-bottom:30px; }
+  .role-selector { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:22px; }
+  .role-opt { padding:12px 8px; border:1.5px solid var(--border); border-radius:10px; text-align:center; cursor:pointer; transition:all .2s; font-size:13px; }
+  .role-opt:hover { border-color:var(--blue); background:var(--blue-light); }
+  .role-opt.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .role-icon { font-size:22px; display:block; margin-bottom:5px; }
+
+  /* MODAL */
+  .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(13,35,64,.4); z-index:200; align-items:center; justify-content:center; }
+  .modal-backdrop.open { display:flex; }
+  .modal { background:var(--surface); border-radius:var(--radius); padding:28px; width:440px; box-shadow:var(--shadow-lg); }
+  .modal-title { font-family:'Fraunces',serif; font-size:20px; color:var(--navy); margin-bottom:18px; }
+  .lang-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+  .lang-opt { padding:10px; border:1.5px solid var(--border); border-radius:8px; text-align:center; cursor:pointer; transition:all .2s; font-size:13.5px; }
+  .lang-opt:hover { border-color:var(--blue); background:var(--blue-light); }
+  .lang-opt.selected { border-color:var(--blue); background:var(--blue-light); color:var(--blue); font-weight:600; }
+  .lang-native { font-size:16px; display:block; margin-bottom:3px; }
+
+  /* LOADING SPINNER */
+  .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* CONNECTION STATUS */
+  #connection-banner { position:fixed; bottom:16px; right:16px; z-index:9999; background:#fef3cd; border:1px solid var(--amber); border-radius:10px; padding:10px 16px; font-size:13px; color:#7a4a00; font-family:'DM Sans',sans-serif; box-shadow:0 4px 20px rgba(0,0,0,.1); display:none; }
+  #connection-ok { position:fixed; bottom:16px; right:16px; z-index:9999; background:#d2f5e5; border:1px solid var(--green); border-radius:10px; padding:10px 16px; font-size:13px; color:#186640; font-family:'DM Sans',sans-serif; box-shadow:0 4px 20px rgba(0,0,0,.1); display:none; }
+
+  /* ADMIN */
+  .admin-stat { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .admin-stat-val { font-family:'Fraunces',serif; font-size:36px; font-weight:700; color:var(--navy); }
+  .admin-stat-lbl { font-size:12.5px; color:var(--text-3); margin-top:2px; }
+
+  /* ROC */
+  .roc-line { stroke:var(--blue); stroke-width:2; fill:none; }
+  .roc-diag { stroke:var(--border); stroke-width:1; stroke-dasharray:4,4; fill:none; }
+
+  @media(max-width:900px){
+    .sidebar{display:none} .main{max-width:100%;padding:16px}
+    .grid-3,.grid-4{grid-template-columns:1fr 1fr} .grid-2{grid-template-columns:1fr}
+    .hero-title{font-size:28px} .landing-hero{padding:36px 24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- CONNECTION BANNERS -->
+<div id="connection-banner">⚠️ <strong>Demo Mode</strong> — Backend not connected. Results are simulated.</div>
+<div id="connection-ok">✅ <strong>Backend Connected</strong> — Live AI predictions active!</div>
+
+<!-- ═══════ LOGIN PAGE ═══════ -->
+<div id="login-page" style="min-height:100vh;background:linear-gradient(135deg,#0d2340 0%,#124a8c 60%,#0d5a7a 100%);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div class="login-card">
+    <div class="login-logo">Medi<span>Fuse</span></div>
+    <p class="login-sub">Multimodal Disease Diagnosis & Forecasting</p>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:14px;font-weight:500">Sign in as:</p>
+    <div class="role-selector">
+      <div class="role-opt active" onclick="selectRole(this,'Patient')"><span class="role-icon">🧑‍⚕️</span>Patient</div>
+      <div class="role-opt" onclick="selectRole(this,'Doctor')"><span class="role-icon">👨‍⚕️</span>Doctor</div>
+      <div class="role-opt" onclick="selectRole(this,'Admin')"><span class="role-icon">⚙️</span>Admin</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email / Hospital ID</label>
+      <input id="login-email" class="form-input" type="email" placeholder="you@hospital.in" value="demo@medifuse.in">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input id="login-password" class="form-input" type="password" placeholder="••••••••" value="demo123">
+    </div>
+    <button id="login-btn" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:12px;" onclick="doLogin()">
+      Sign In →
+    </button>
+    <p style="font-size:12px;color:var(--text-3);margin-top:12px;text-align:center">Use any email & password for demo</p>
+  </div>
+</div>
+
+<!-- ═══════ MAIN APP ═══════ -->
+<div id="app-shell" style="display:none;">
+  <nav class="topbar">
+    <div class="logo">Medi<span>Fuse</span></div>
+    <ul class="nav-links">
+      <li><a onclick="showScreen('landing')" id="nav-landing" class="active">Home</a></li>
+      <li><a onclick="showScreen('patient')" id="nav-patient">Patient</a></li>
+      <li><a onclick="showScreen('doctor')" id="nav-doctor">Doctor</a></li>
+      <li><a onclick="showScreen('upload')" id="nav-upload">Upload</a></li>
+      <li><a onclick="showScreen('results')" id="nav-results">Results</a></li>
+      <li><a onclick="showScreen('admin')" id="nav-admin">Admin</a></li>
+    </ul>
+    <div class="topbar-right">
+      <button class="lang-btn" onclick="document.getElementById('lang-modal').classList.add('open')">🌐 EN</button>
+      <div class="avatar" id="user-avatar">MK</div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div style="margin-bottom:6px">
+        <div class="sidebar-label">Navigation</div>
+        <div class="sidebar-item active" id="sb-landing" onclick="showScreen('landing')"><span class="sidebar-icon">🏠</span>Home</div>
+        <div class="sidebar-item" id="sb-patient" onclick="showScreen('patient')"><span class="sidebar-icon">👤</span>Patient Dashboard</div>
+        <div class="sidebar-item" id="sb-doctor" onclick="showScreen('doctor')"><span class="sidebar-icon">🩺</span>Doctor Dashboard</div>
+      </div>
+      <div style="margin-bottom:6px">
+        <div class="sidebar-label">Diagnosis</div>
+        <div class="sidebar-item" id="sb-upload" onclick="showScreen('upload')"><span class="sidebar-icon">📤</span>Upload Data</div>
+        <div class="sidebar-item" id="sb-results" onclick="showScreen('results')"><span class="sidebar-icon">📊</span>Prediction Results</div>
+        <div class="sidebar-item" id="sb-explain" onclick="showScreen('explain')"><span class="sidebar-icon">🔍</span>XAI Explanations</div>
+      </div>
+      <div>
+        <div class="sidebar-label">Tools</div>
+        <div class="sidebar-item" id="sb-hospitals" onclick="showScreen('hospitals')"><span class="sidebar-icon">🗺️</span>Nearby Hospitals</div>
+        <div class="sidebar-item" id="sb-report" onclick="showScreen('report')"><span class="sidebar-icon">📄</span>Download Report</div>
+        <div class="sidebar-item" id="sb-admin" onclick="showScreen('admin')"><span class="sidebar-icon">⚙️</span>Admin Panel<span class="sidebar-badge">3</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="showScreen('landing')">🏠 Home</button>
+        <button class="page-tab" onclick="showScreen('patient')">👤 Patient</button>
+        <button class="page-tab" onclick="showScreen('doctor')">🩺 Doctor</button>
+        <button class="page-tab" onclick="showScreen('upload')">📤 Upload</button>
+        <button class="page-tab" onclick="showScreen('results')">📊 Results</button>
+        <button class="page-tab" onclick="showScreen('explain')">🔍 XAI</button>
+        <button class="page-tab" onclick="showScreen('hospitals')">🗺️ Hospitals</button>
+        <button class="page-tab" onclick="showScreen('report')">📄 Report</button>
+        <button class="page-tab" onclick="showScreen('admin')">⚙️ Admin</button>
+      </div>
+
+      <!-- ══ LANDING ══ -->
+      <div id="screen-landing" class="screen visible">
+        <div class="landing-hero">
+          <div class="hero-tag">✦ AI-Powered · Multimodal · Explainable</div>
+          <h1 class="hero-title">Precision Diagnosis<br>for <em>Every Patient</em></h1>
+          <p class="hero-desc">Combine blood reports, symptom text, and wearable signals for AI-assisted disease prediction with full explainability.</p>
+          <div class="hero-btns">
+            <button class="btn btn-primary btn-lg" onclick="showScreen('upload')">Start Diagnosis →</button>
+            <button class="btn btn-secondary btn-lg" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)">Watch Demo</button>
+          </div>
+        </div>
+        <div style="margin-bottom:28px;display:flex;flex-wrap:wrap;">
+          <div class="feature-pill"><span>🩸</span>Blood Reports</div>
+          <div class="feature-pill"><span>🫁</span>X-Ray / CT / MRI</div>
+          <div class="feature-pill"><span>📝</span>Clinical Notes</div>
+          <div class="feature-pill"><span>🌐</span>12 Indian Languages</div>
+          <div class="feature-pill"><span>🏥</span>Hospital Finder</div>
+          <div class="feature-pill"><span>🔍</span>SHAP + Grad-CAM</div>
+          <div class="feature-pill"><span>📄</span>PDF Reports</div>
+        </div>
+        <div class="grid-3 mb-24">
+          <div class="card" style="text-align:center;"><div style="font-size:36px;margin-bottom:10px">🔬</div><h3>Multimodal Fusion</h3><p style="font-size:13.5px;color:var(--text-2)">Structured labs + imaging + text combined using cross-attention deep learning.</p></div>
+          <div class="card" style="text-align:center;"><div style="font-size:36px;margin-bottom:10px">🧠</div><h3>Explainable AI</h3><p style="font-size:13.5px;color:var(--text-2)">SHAP feature importance shows exactly why the AI made its prediction.</p></div>
+          <div class="card" style="text-align:center;"><div style="font-size:36px;margin-bottom:10px">🗣️</div><h3>Multilingual</h3><p style="font-size:13.5px;color:var(--text-2)">Hindi, Tamil, Bengali, Telugu, Marathi & more — results in your language.</p></div>
+        </div>
+        <div class="card mb-24">
+          <h3>How It Works</h3>
+          <div class="steps">
+            <div class="step done"><div class="step-num">✓</div><span>Upload Data</span></div>
+            <div class="step-line done"></div>
+            <div class="step done"><div class="step-num">✓</div><span>AI Encoding</span></div>
+            <div class="step-line done"></div>
+            <div class="step active"><div class="step-num">3</div><span>Fusion</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-num">4</div><span>Prediction</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-num">5</div><span>XAI</span></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-num">6</div><span>Download Report</span></div>
+          </div>
+          <p style="font-size:13.5px;color:var(--text-2)">Six-step pipeline from raw patient data to full clinical summary with hospital referrals — in under 90 seconds.</p>
+        </div>
+      </div>
+
+      <!-- ══ UPLOAD (MAIN DIAGNOSIS FORM) ══ -->
+      <div id="screen-upload" class="screen">
+        <h1 class="page-title">Upload Patient Data</h1>
+        <p class="page-subtitle">Fill in patient details and click "Run AI Diagnosis" to get predictions</p>
+        <div class="steps mb-24">
+          <div class="step active"><div class="step-num">1</div><span>Enter Data</span></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-num">2</div><span>AI Processing</span></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-num">3</div><span>View Results</span></div>
+        </div>
+
+        <div class="grid-2 mb-24">
+          <div class="card">
+            <h3>Patient Demographics</h3>
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label">Full Name</label><input id="f-name" class="form-input" placeholder="Patient name" value="Ananya Sharma"></div>
+              <div class="form-group"><label class="form-label">Age</label><input id="f-age" class="form-input" type="number" placeholder="Years" value="42"></div>
+              <div class="form-group"><label class="form-label">Sex</label>
+                <select id="f-gender" class="form-input form-select">
+                  <option value="male">Male</option><option value="female" selected>Female</option><option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">City</label><input id="f-city" class="form-input" placeholder="e.g. Chennai" value="Chennai"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>📋 Blood Report</h3>
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label">Hemoglobin (g/dL)</label><input id="f-hb" class="form-input" placeholder="12.5" value="11.8"></div>
+              <div class="form-group"><label class="form-label">Blood Glucose (mg/dL)</label><input id="f-glucose" class="form-input" placeholder="110" value="112"></div>
+              <div class="form-group"><label class="form-label">BP Systolic (mmHg)</label><input id="f-bp-sys" class="form-input" placeholder="130" value="138"></div>
+              <div class="form-group"><label class="form-label">BP Diastolic</label><input id="f-bp-dia" class="form-input" placeholder="85" value="88"></div>
+              <div class="form-group"><label class="form-label">Cholesterol (mg/dL)</label><input id="f-chol" class="form-input" placeholder="190" value="192"></div>
+              <div class="form-group"><label class="form-label">TSH (mIU/L)</label><input id="f-tsh" class="form-input" placeholder="2.4" value="2.4"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2 mb-24">
+          <div class="card">
+            <h3>🧬 Lifestyle & Tabular Data</h3>
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label">Weight (kg)</label><input id="f-weight" class="form-input" type="number" placeholder="70" value="72"></div>
+              <div class="form-group"><label class="form-label">Height (cm)</label><input id="f-height" class="form-input" type="number" placeholder="165" value="162"></div>
+              <div class="form-group"><label class="form-label">Smoking</label>
+                <select id="f-smoking" class="form-input form-select">
+                  <option value="no" selected>No</option><option value="yes">Yes</option><option value="former">Former</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Alcohol</label>
+                <select id="f-alcohol" class="form-input form-select">
+                  <option value="none" selected>None</option><option value="occasional">Occasional</option><option value="regular">Regular</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Physical Activity</label>
+                <select id="f-activity" class="form-input form-select">
+                  <option value="sedentary" selected>Sedentary</option><option value="moderate">Moderate</option><option value="active">Active</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Sleep Hours/Night</label><input id="f-sleep" class="form-input" type="number" placeholder="7" value="6"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Family History of Illness</label>
+              <select id="f-family" class="form-input form-select">
+                <option value="true">Yes</option><option value="false">No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>📡 Wearable / Signal Data</h3>
+            <div class="form-group"><label class="form-label">Avg Heart Rate (BPM)</label><input id="f-hr" class="form-input" type="number" placeholder="75" value="98"></div>
+            <div class="form-group"><label class="form-label">Avg SpO2 (%)</label><input id="f-spo2" class="form-input" type="number" placeholder="98" value="97"></div>
+            <div class="form-group"><label class="form-label">Avg Steps/Day</label><input id="f-steps" class="form-input" type="number" placeholder="5000" value="3000"></div>
+            <div class="form-group"><label class="form-label">Sleep Quality (1–10)</label><input id="f-sleepq" class="form-input" type="number" min="1" max="10" placeholder="7" value="4"></div>
+            <div class="form-group"><label class="form-label">Stress Level (1–10)</label><input id="f-stress" class="form-input" type="number" min="1" max="10" placeholder="5" value="7"></div>
+
+            <h3 style="margin-top:16px">📝 Symptom Description</h3>
+            <div class="form-group">
+              <label class="form-label">Describe symptoms (any language)</label>
+              <textarea id="f-symptoms" class="form-input" placeholder="e.g. I have been feeling very tired, frequent headaches and chest pressure...">I have been feeling very tired, frequent headaches and chest pressure for the past 3 months. Also experiencing frequent urination and blurred vision sometimes.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <div id="upload-error" style="display:none;padding:14px;background:#fde8e8;border-radius:8px;border-left:3px solid var(--red);margin-bottom:16px;color:#7a1010;font-size:13.5px;"></div>
+
+        <div style="display:flex;gap:12px;align-items:center">
+          <button id="diagnose-btn" class="btn btn-primary btn-lg" onclick="runDiagnosis()">🚀 Run AI Diagnosis →</button>
+          <button class="btn btn-secondary btn-lg" onclick="clearForm()">Clear Form</button>
+          <span id="processing-msg" style="display:none;font-size:13px;color:var(--text-2)">⏳ Processing through AI pipeline...</span>
+        </div>
+      </div>
+
+      <!-- ══ RESULTS ══ -->
+      <div id="screen-results" class="screen">
+        <h1 class="page-title">Disease Prediction Results</h1>
+        <p class="page-subtitle" id="results-subtitle">Run a diagnosis from the Upload tab to see results</p>
+
+        <!-- Overall Risk -->
+        <div id="results-overall" class="card mb-24" style="background:linear-gradient(135deg,#fff8f0,#fff3e8);border-color:#f0c070;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div>
+              <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);font-weight:600;margin-bottom:6px">Overall Risk Assessment</div>
+              <div id="overall-risk-label" style="font-family:'Fraunces',serif;font-size:32px;font-weight:700;color:#7a4a00">⏳ Awaiting Diagnosis</div>
+              <p id="overall-risk-desc" style="font-size:14px;color:var(--text-2);margin-top:6px">Fill in the form and click "Run AI Diagnosis"</p>
+            </div>
+            <svg width="160" height="100" viewBox="0 0 160 100">
+              <defs><linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2a9d5c"/><stop offset="50%" stop-color="#e8a020"/><stop offset="100%" stop-color="#d63c3c"/></linearGradient></defs>
+              <path d="M20,90 A60,60 0 0,1 140,90" stroke="#e8eef5" stroke-width="14" fill="none" stroke-linecap="round"/>
+              <path id="gauge-fill" d="M20,90 A60,60 0 0,1 140,90" stroke="url(#gaugeGrad)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188"/>
+              <line id="gauge-needle" x1="80" y1="90" x2="80" y2="35" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="80" cy="90" r="5" fill="var(--navy)"/>
+              <text id="gauge-label" x="80" y="108" text-anchor="middle" font-size="11" fill="var(--text-2)" font-weight="600">—</text>
+              <text x="18" y="106" font-size="9" fill="var(--green)">Low</text>
+              <text x="125" y="106" font-size="9" fill="var(--red)">High</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Conditions grid -->
+        <h3 class="mb-16">Predicted Conditions</h3>
+        <div id="conditions-grid" class="grid-3 mb-24">
+          <div class="disease-card" style="opacity:.4;text-align:center;padding:30px">
+            <div style="font-size:32px;margin-bottom:8px">🔬</div>
+            <p style="color:var(--text-3)">Run diagnosis to see predictions</p>
+          </div>
+        </div>
+
+        <!-- Modality weights + recommendations -->
+        <div class="grid-2 mb-24">
+          <div class="card">
+            <h3>Modality Contribution</h3>
+            <div id="modality-bars">
+              <div style="text-align:center;color:var(--text-3);padding:20px">Run diagnosis to see modality weights</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recommended Actions</h3>
+            <div id="recommendations-list">
+              <div style="text-align:center;color:var(--text-3);padding:20px">Recommendations will appear after diagnosis</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="showScreen('explain')">🔍 View AI Explanations</button>
+          <button class="btn btn-secondary" onclick="showScreen('hospitals')">🗺️ Find Nearby Hospitals</button>
+          <button class="btn btn-teal" onclick="showScreen('report')">📄 Download Report</button>
+          <button class="btn btn-secondary" onclick="showScreen('upload')">🔄 New Diagnosis</button>
+        </div>
+      </div>
+
+      <!-- ══ XAI EXPLAIN ══ -->
+      <div id="screen-explain" class="screen">
+        <h1 class="page-title">AI Explainability Panel</h1>
+        <p class="page-subtitle">SHAP feature importance — why did MediFuse predict these conditions?</p>
+        <div class="grid-2 mb-24">
+          <div class="card">
+            <h3 id="shap-title">SHAP Feature Importance</h3>
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">Red bars increase risk · Green bars decrease it · Longer = stronger influence</p>
+            <div id="shap-plot">
+              <div style="text-align:center;color:var(--text-3);padding:30px">Run a diagnosis first to see SHAP explanations</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Modality Weights (Cross-Attention)</h3>
+            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">How much each data source contributed to the final prediction</p>
+            <div id="modality-detail">
+              <div style="text-align:center;color:var(--text-3);padding:30px">Weights appear after diagnosis</div>
+            </div>
+            <div class="divider"></div>
+            <div class="card" style="background:#f0f8ff;border:none">
+              <h3>Plain Language Summary</h3>
+              <div id="plain-language" style="color:var(--navy);font-size:14px;line-height:1.7">Run a diagnosis to get a plain-language explanation of the results.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ HOSPITALS ══ -->
+      <div id="screen-hospitals" class="screen">
+        <h1 class="page-title">Nearby Hospitals</h1>
+        <p class="page-subtitle" id="hospitals-subtitle">Enter a city to find relevant specialists</p>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <input id="hospital-city" class="form-input" style="max-width:260px" placeholder="Enter city..." value="Chennai">
+          <button class="btn btn-primary" onclick="loadHospitals()">🔍 Search</button>
+        </div>
+        <div class="grid-2 mb-24">
+          <div>
+            <div class="map-placeholder mb-16">
+              <div class="map-grid"></div>
+              <svg style="position:absolute;inset:0;width:100%;height:100%">
+                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,.6)" stroke-width="6"/>
+                <line x1="35%" y1="0" x2="35%" y2="100%" stroke="rgba(255,255,255,.6)" stroke-width="4"/>
+                <line x1="65%" y1="0" x2="65%" y2="100%" stroke="rgba(255,255,255,.4)" stroke-width="3"/>
+              </svg>
+              <div class="map-pin blue" style="top:28%;left:32%"><div class="map-pin-inner"></div></div>
+              <div class="map-pin teal" style="top:42%;left:60%"><div class="map-pin-inner"></div></div>
+              <div class="map-pin red" style="top:60%;left:44%"><div class="map-pin-inner"></div></div>
+              <div style="position:absolute;top:48%;left:48%;width:14px;height:14px;background:var(--blue);border-radius:50%;border:3px solid white;box-shadow:0 0 0 6px rgba(26,95,173,.2)"></div>
+              <div class="hospital-card-map" style="top:10%;left:42%">
+                <strong id="map-popup-name">Apollo Hospital</strong>
+                <div class="dist" id="map-popup-dist">📍 1.2 km away</div>
+              </div>
+            </div>
+          </div>
+          <div id="hospital-cards" style="display:flex;flex-direction:column;gap:14px">
+            <div style="text-align:center;color:var(--text-3);padding:30px">Loading hospitals...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REPORT ══ -->
+      <div id="screen-report" class="screen">
+        <h1 class="page-title">Medical Report</h1>
+        <p class="page-subtitle">AI-generated diagnostic report</p>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+          <div id="report-content" class="report-preview" style="flex:1;min-width:300px">
+            <div class="report-header">
+              <div><div class="report-logo">MediFuse</div><div style="font-size:11px;color:var(--text-3)">AI-Assisted Diagnostic Report</div></div>
+              <div class="report-meta" id="report-meta">Report ID: —<br>Date: —</div>
+            </div>
+            <div class="report-section">
+              <div class="report-section-title">Patient Information</div>
+              <div id="report-patient" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+                <div><span style="color:var(--text-3)">Name:</span> <span id="rp-name">—</span></div>
+                <div><span style="color:var(--text-3)">Age/Sex:</span> <span id="rp-age">—</span></div>
+                <div><span style="color:var(--text-3)">City:</span> <span id="rp-city">—</span></div>
+                <div><span style="color:var(--text-3)">Risk:</span> <span id="rp-risk">—</span></div>
+              </div>
+            </div>
+            <div class="divider" style="margin:12px 0"></div>
+            <div class="report-section">
+              <div class="report-section-title">Prediction Summary</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+                <thead><tr style="border-bottom:1px solid var(--border)">
+                  <th style="padding:7px 0;text-align:left;font-weight:600;font-size:11px;color:var(--text-3)">Condition</th>
+                  <th style="padding:7px 0;text-align:center;font-size:11px;color:var(--text-3)">Probability</th>
+                  <th style="padding:7px 0;text-align:center;font-size:11px;color:var(--text-3)">Risk Level</th>
+                </tr></thead>
+                <tbody id="report-conditions"><tr><td colspan="3" style="padding:16px;text-align:center;color:var(--text-3)">Run diagnosis first</td></tr></tbody>
+              </table>
+            </div>
+            <div class="divider" style="margin:12px 0"></div>
+            <div style="font-size:10.5px;color:var(--text-3);line-height:1.6">⚠ <em>This report is AI-assisted and is intended to support — not replace — clinical decision-making. Final diagnosis must be confirmed by a licensed physician.</em></div>
+          </div>
+          <div style="width:220px;flex-shrink:0">
+            <div class="card mb-16">
+              <h3>Download Options</h3>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="printReport()">🖨 Print Report</button>
+                <button class="btn btn-secondary" style="width:100%;justify-content:center" onclick="showScreen('upload')">🔄 New Diagnosis</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PATIENT DASHBOARD ══ -->
+      <div id="screen-patient" class="screen">
+        <h1 class="page-title">Patient Dashboard</h1>
+        <p class="page-subtitle" id="patient-subtitle">No diagnosis run yet — go to Upload to start</p>
+        <div class="grid-4 mb-24">
+          <div class="stat-card blue"><div class="stat-label">Risk Level</div><div class="stat-value" id="pd-risk" style="font-size:22px">—</div><div class="stat-sub" id="pd-risk-sub">Run diagnosis first</div></div>
+          <div class="stat-card teal"><div class="stat-label">Conditions Found</div><div class="stat-value" id="pd-conditions">—</div><div class="stat-sub" id="pd-cond-sub">—</div></div>
+          <div class="stat-card amber"><div class="stat-label">Overall Score</div><div class="stat-value" id="pd-score">—</div><div class="stat-sub">Risk percentage</div></div>
+          <div class="stat-card red"><div class="stat-label">Urgent Actions</div><div class="stat-value" id="pd-urgent">—</div><div class="stat-sub" id="pd-urgent-sub">—</div></div>
+        </div>
+        <div class="grid-2 mb-24">
+          <div class="card">
+            <h3>Recent Predictions</h3>
+            <div id="patient-conditions-list">
+              <div style="text-align:center;color:var(--text-3);padding:30px">
+                <p>No predictions yet.</p>
+                <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="showScreen('upload')">Start Diagnosis →</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recommended Specialists</h3>
+            <div id="patient-specialists">
+              <div style="text-align:center;color:var(--text-3);padding:30px">Run a diagnosis to get specialist recommendations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DOCTOR DASHBOARD ══ -->
+      <div id="screen-doctor" class="screen">
+        <h1 class="page-title">Doctor Dashboard</h1>
+        <p class="page-subtitle">Dr. Meera Krishnaswamy · MBBS, MD — General Medicine · Apollo Hospital, Chennai</p>
+        <div class="grid-4 mb-24">
+          <div class="stat-card blue"><div class="stat-label">Today's Patients</div><div class="stat-value">14</div><div class="stat-sub" style="color:var(--green)">↑ 3 new</div></div>
+          <div class="stat-card red"><div class="stat-label">High Risk</div><div class="stat-value">4</div><div class="stat-sub">Require urgent review</div></div>
+          <div class="stat-card teal"><div class="stat-label">Pending Reports</div><div class="stat-value">7</div><div class="stat-sub">Awaiting sign-off</div></div>
+          <div class="stat-card amber"><div class="stat-label">Model Accuracy</div><div class="stat-value">94.2%</div><div class="stat-sub">On validation set</div></div>
+        </div>
+        <div class="card">
+          <h3>Patient Queue</h3>
+          <table class="data-table">
+            <thead><tr><th>Patient</th><th>Age/Sex</th><th>Prediction</th><th>Risk</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Rajan T.</strong><br><span style="font-size:12px;color:var(--text-3)">PT-2024-00091</span></td><td>58M</td><td>Cardiac Disease</td><td><span class="risk-badge risk-high">High</span></td><td><button class="btn btn-primary btn-sm" onclick="showScreen('results')">Review</button></td></tr>
+              <tr><td><strong>Priya S.</strong><br><span style="font-size:12px;color:var(--text-3)">PT-2024-00142</span></td><td>34F</td><td>Thyroid, Anemia</td><td><span class="risk-badge risk-medium">Medium</span></td><td><button class="btn btn-secondary btn-sm" onclick="showScreen('results')">Review</button></td></tr>
+              <tr><td><strong>Ananya S.</strong></td><td>42F</td><td>Diabetes, Hypertension</td><td><span class="risk-badge risk-medium">Medium</span></td><td><button class="btn btn-secondary btn-sm" onclick="showScreen('results')">Review</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ ADMIN ══ -->
+      <div id="screen-admin" class="screen">
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-subtitle">System management, model monitoring, and user administration</p>
+        <div class="grid-4 mb-24">
+          <div class="admin-stat card"><div class="admin-stat-val" style="color:var(--blue)">1,248</div><div class="admin-stat-lbl">Total Patients</div></div>
+          <div class="admin-stat card"><div class="admin-stat-val" style="color:var(--teal)">94.2%</div><div class="admin-stat-lbl">Model Accuracy</div></div>
+          <div class="admin-stat card"><div class="admin-stat-val" style="color:var(--amber)">87</div><div class="admin-stat-lbl">Active Doctors</div></div>
+          <div class="admin-stat card"><div class="admin-stat-val" style="color:var(--red)">3</div><div class="admin-stat-lbl">System Alerts</div></div>
+        </div>
+        <div class="card mb-24">
+          <h3>Model Performance</h3>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--text-2)">Diabetes Model (XGBoost)</span><span style="font-weight:600;color:var(--green)">96.1%</span></div><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:96%;background:var(--green)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--text-2)">Cardiac (Multi-modal CNN)</span><span style="font-weight:600;color:var(--green)">93.4%</span></div><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:93%;background:var(--green)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--text-2)">Thyroid (Tabular + NLP)</span><span style="font-weight:600;color:var(--amber)">88.2%</span></div><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:88%;background:var(--amber)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--text-2)">COPD (Imaging CNN)</span><span style="font-weight:600;color:var(--amber)">85.7%</span></div><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:86%;background:var(--amber)"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>System Alerts</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:12px 14px;background:#fde8e8;border-radius:8px;border-left:3px solid var(--red)"><div style="font-weight:600;font-size:13.5px;color:#7a1010">🚨 Model Drift — COPD Classifier accuracy dropped 3.2%</div></div>
+            <div style="padding:12px 14px;background:#fef3cd;border-radius:8px;border-left:3px solid var(--amber)"><div style="font-weight:600;font-size:13.5px;color:#7a4a00">⚠ Storage at 78% capacity</div></div>
+            <div style="padding:12px 14px;background:#d2f5e5;border-radius:8px;border-left:3px solid var(--green)"><div style="font-weight:600;font-size:13.5px;color:#186640">✓ 3 new languages added: Odia, Punjabi, Gujarati</div></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- LANGUAGE MODAL -->
+<div class="modal-backdrop" id="lang-modal">
+  <div class="modal">
+    <h2 class="modal-title">🌐 Select Language</h2>
+    <div class="lang-grid">
+      <div class="lang-opt selected" onclick="selectLang(this)"><span class="lang-native">English</span>EN</div>
+      <div class="lang-opt" onclick="selectLang(this)"><span class="lang-native">हिन्दी</span>HI</div>
+      <div class="lang-opt" onclick="selectLang(this)"><span class="lang-native">தமிழ்</span>TA</div>
+      <div class="lang-opt" onclick="selectLang(this)"><span class="lang-native">বাংলা</span>BN</div>
+      <div class="lang-opt" onclick="selectLang(this)"><span class="lang-native">తెలుగు</span>TE</div>
+      <div class="lang-opt" onclick="selectLang(this)"><span class="lang-native">मराठी</span>MR</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="document.getElementById('lang-modal').classList.remove('open')">Apply</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('lang-modal').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════
+const API_BASE = "http://localhost:8000";
+let DEMO_MODE = false;
+let lastResult = null;  // Store last prediction result globally
+
+// ════════════════════════════════════════════
+//  STARTUP — Check backend health
+// ════════════════════════════════════════════
+window.onload = async function() {
+  try {
+    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+    if (res.ok) {
+      DEMO_MODE = false;
+      showBanner('ok');
+    }
+  } catch {
+    DEMO_MODE = true;
+    showBanner('demo');
+  }
+};
+
+function showBanner(type) {
+  const demo = document.getElementById('connection-banner');
+  const ok = document.getElementById('connection-ok');
+  if (type === 'demo') {
+    demo.style.display = 'block';
+    setTimeout(() => demo.style.display = 'block', 100);
+  } else {
+    ok.style.display = 'block';
+    setTimeout(() => ok.style.display = 'none', 3000);
+  }
+}
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+
+  const screen = document.getElementById('screen-' + name);
+  if (screen) screen.classList.add('visible');
+
+  const tabs = document.querySelectorAll('.page-tab');
+  tabs.forEach(t => { if (t.textContent.toLowerCase().includes(name.toLowerCase().slice(0,4))) t.classList.add('active'); });
+
+  const navLink = document.getElementById('nav-' + name);
+  if (navLink) navLink.classList.add('active');
+  const sbItem = document.getElementById('sb-' + name);
+  if (sbItem) sbItem.classList.add('active');
+
+  // Auto-load hospitals when navigating there
+  if (name === 'hospitals') loadHospitals();
+}
+
+// ════════════════════════════════════════════
+//  LOGIN
+// ════════════════════════════════════════════
+let selectedRole = 'Patient';
+function selectRole(el, role) {
+  selectedRole = role;
+  document.querySelectorAll('.role-opt').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+}
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = '<span class="spinner"></span> Signing in...';
+  btn.disabled = true;
+
+  await new Promise(r => setTimeout(r, 800)); // Simulate auth
+
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'block';
+
+  // Set avatar initials from role
+  const avatarMap = { Patient: 'AS', Doctor: 'MK', Admin: 'AD' };
+  document.getElementById('user-avatar').textContent = avatarMap[selectedRole] || 'MK';
+
+  showScreen('landing');
+}
+
+// ════════════════════════════════════════════
+//  MAIN: RUN DIAGNOSIS
+// ════════════════════════════════════════════
+async function runDiagnosis() {
+  const btn = document.getElementById('diagnose-btn');
+  const msg = document.getElementById('processing-msg');
+  const errBox = document.getElementById('upload-error');
+
+  // Hide error
+  errBox.style.display = 'none';
+
+  // Collect form data
+  const payload = {
+    patient_name: document.getElementById('f-name').value || 'Anonymous',
+    age: parseInt(document.getElementById('f-age').value) || null,
+    gender: document.getElementById('f-gender').value,
+    city: document.getElementById('f-city').value,
+    symptoms_text: document.getElementById('f-symptoms').value,
+    blood_report: {
+      hemoglobin: parseFloat(document.getElementById('f-hb').value) || null,
+      blood_glucose: parseFloat(document.getElementById('f-glucose').value) || null,
+      bp_systolic: parseFloat(document.getElementById('f-bp-sys').value) || null,
+      bp_diastolic: parseFloat(document.getElementById('f-bp-dia').value) || null,
+      cholesterol: parseFloat(document.getElementById('f-chol').value) || null,
+      tsh: parseFloat(document.getElementById('f-tsh').value) || null,
+    },
+    tabular_data: {
+      age: parseInt(document.getElementById('f-age').value) || null,
+      gender: document.getElementById('f-gender').value,
+      weight_kg: parseFloat(document.getElementById('f-weight').value) || null,
+      height_cm: parseFloat(document.getElementById('f-height').value) || null,
+      smoking: document.getElementById('f-smoking').value,
+      alcohol: document.getElementById('f-alcohol').value,
+      physical_activity: document.getElementById('f-activity').value,
+      sleep_hours: parseFloat(document.getElementById('f-sleep').value) || null,
+      family_history: document.getElementById('f-family').value === 'true',
+    },
+    signal_data: {
+      avg_heart_rate: parseFloat(document.getElementById('f-hr').value) || null,
+      avg_spo2: parseFloat(document.getElementById('f-spo2').value) || null,
+      avg_steps_day: parseFloat(document.getElementById('f-steps').value) || null,
+      sleep_quality: parseInt(document.getElementById('f-sleepq').value) || null,
+      stress_level: parseInt(document.getElementById('f-stress').value) || null,
+    }
+  };
+
+  // Show loading state
+  btn.innerHTML = '<span class="spinner"></span> Running AI Pipeline...';
+  btn.disabled = true;
+  msg.style.display = 'inline';
+
+  try {
+    let result;
+
+    if (DEMO_MODE) {
+      await new Promise(r => setTimeout(r, 1500));
+      result = getDemoResult(payload);
+    } else {
+      const res = await fetch(`${API_BASE}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      result = await res.json();
+    }
+
+    lastResult = result;
+    renderResults(result);
+    showScreen('results');
+
+  } catch (err) {
+    // Fallback to demo if backend call fails
+    console.warn('Backend error, falling back to demo:', err);
+    const result = getDemoResult(payload);
+    lastResult = result;
+    renderResults(result);
+    showScreen('results');
+  } finally {
+    btn.innerHTML = '🚀 Run AI Diagnosis →';
+    btn.disabled = false;
+    msg.style.display = 'none';
+  }
+}
+
+// ════════════════════════════════════════════
+//  RENDER RESULTS into all screens
+// ════════════════════════════════════════════
+function renderResults(r) {
+  const score = r.overall_risk_score_pct;
+  const risk = r.overall_risk_level;
+  const conditions = r.conditions || [];
+
+  // ── Overall gauge ──
+  const offset = 188 - (score / 100) * 188;
+  document.getElementById('gauge-fill').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('gauge-label').textContent = score + '% Risk Score';
+
+  const riskColors = { High: '#d63c3c', Medium: '#e8a020', Low: '#2a9d5c' };
+  const riskEmoji = { High: '🔴', Medium: '⚠️', Low: '✅' };
+  document.getElementById('overall-risk-label').textContent = `${riskEmoji[risk] || '⚠️'} ${risk} Risk`;
+  document.getElementById('overall-risk-label').style.color = riskColors[risk] || '#7a4a00';
+  document.getElementById('overall-risk-desc').textContent =
+    `${conditions.length} condition(s) detected. Report ID: ${r.report_id} · Processed in ${r.processing_time_ms}ms` +
+    (r._demo ? ' (Demo Mode)' : '');
+  document.getElementById('results-subtitle').textContent =
+    `${r.patient_name} · Analysed ${new Date().toLocaleString('en-IN')}`;
+
+  // ── Conditions grid ──
+  const grid = document.getElementById('conditions-grid');
+  grid.innerHTML = '';
+  conditions.slice(0, 6).forEach(c => {
+    const pct = c.probability_pct;
+    const barColor = pct >= 65 ? 'linear-gradient(90deg,#d63c3c,#f87575)' : 'linear-gradient(90deg,#e8a020,#f5c95c)';
+    const borderColor = pct >= 65 ? 'var(--red)' : (pct >= 40 ? 'var(--amber)' : 'var(--green)');
+    const badgeCls = pct >= 65 ? 'risk-high' : (pct >= 40 ? 'risk-medium' : 'risk-low');
+
+    const card = document.createElement('div');
+    card.className = 'disease-card';
+    card.style.borderLeft = `4px solid ${borderColor}`;
+    card.innerHTML = `
+      <div class="disease-name">${c.disease}<span class="risk-badge ${badgeCls}"><span class="risk-dot"></span>${c.risk_level}</span></div>
+      <div class="prob-bar-bg"><div class="prob-bar-fill" style="width:0%;background:${barColor}" data-width="${pct}"></div></div>
+      <div class="prob-label"><span><strong>${pct}%</strong> probability</span><span>🏥 ${c.specialty}</span></div>
+      <p style="font-size:12px;color:var(--text-3);margin-top:8px">${c.xai_factors?.[0]?.feature || '—'}</p>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="showXAI('${c.disease}')">🔍 Why? (SHAP)</button>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.prob-bar-fill[data-width]').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }, 100);
+
+  // ── Modality weights ──
+  const mw = r.modality_weights || { text: 0.3, tabular: 0.5, signal: 0.2 };
+  const modalityHTML = `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      ${[['Text (BERT)', mw.text, 'var(--amber)'], ['Tabular (MLP)', mw.tabular, 'var(--blue-mid)'], ['Signal (LSTM)', mw.signal, 'var(--teal)']].map(([label, val, color]) => `
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+            <span style="color:var(--text-2)">${label}</span>
+            <span style="font-weight:600">${Math.round(val*100)}%</span>
+          </div>
+          <div class="prob-bar-bg"><div class="prob-bar-fill" style="width:${val*100}%;background:${color}"></div></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('modality-bars').innerHTML = modalityHTML;
+  document.getElementById('modality-detail').innerHTML = modalityHTML;
+
+  // ── Recommendations ──
+  const recs = r.recommendations || [];
+  const recColors = { immediate: ['#fde8e8', 'var(--red)', '🚨 Immediate'], soon: ['#fef3cd', 'var(--amber)', '⚠ Soon (2 weeks)'], routine: ['#d2f5e5', 'var(--green)', '✓ Routine (1 month)'] };
+  document.getElementById('recommendations-list').innerHTML = recs.length
+    ? recs.map(rec => {
+        const [bg, border, label] = recColors[rec.priority] || recColors.routine;
+        return `<div style="padding:12px;background:${bg};border-radius:8px;border-left:3px solid ${border};margin-bottom:10px">
+          <div style="font-weight:600;font-size:13px">${label}</div>
+          <p style="font-size:12.5px;margin-top:3px">${rec.action} — <em>${rec.specialist}</em></p>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--text-3);padding:12px">No specific recommendations generated.</div>';
+
+  // ── XAI panel (first disease) ──
+  if (conditions.length > 0) {
+    renderSHAP(conditions[0]);
+  }
+
+  // ── Plain language ──
+  const top = conditions[0];
+  if (top) {
+    document.getElementById('plain-language').innerHTML =
+      `The AI analyzed your blood report, symptoms, and wearable data. The highest risk detected is <strong>${top.disease}</strong> at <strong>${top.probability_pct}%</strong>. 
+      ${top.xai_factors?.[0] ? `The strongest contributing factor was: <em>${top.xai_factors[0].feature}</em>.` : ''}
+      This is a risk assessment only — please consult a <strong>${top.specialty}</strong> for a confirmed diagnosis.`;
+  }
+
+  // ── Patient Dashboard ──
+  document.getElementById('patient-subtitle').textContent = `${r.patient_name} · Last diagnosis: ${new Date().toLocaleDateString('en-IN')}`;
+  document.getElementById('pd-risk').textContent = risk;
+  document.getElementById('pd-risk').style.color = riskColors[risk];
+  document.getElementById('pd-risk-sub').textContent = `${score}% overall score`;
+  document.getElementById('pd-conditions').textContent = conditions.length;
+  document.getElementById('pd-cond-sub').textContent = conditions.slice(0,2).map(c => c.disease.split(' ')[0]).join(', ');
+  document.getElementById('pd-score').textContent = score + '%';
+  const urgent = (r.recommendations || []).filter(r => r.priority === 'immediate').length;
+  document.getElementById('pd-urgent').textContent = urgent;
+  document.getElementById('pd-urgent-sub').textContent = urgent > 0 ? 'Require immediate attention' : 'No urgent actions';
+
+  document.getElementById('patient-conditions-list').innerHTML = conditions.slice(0, 3).map(c => `
+    <div class="disease-card" style="margin-bottom:12px">
+      <div class="disease-name">${c.disease}<span class="risk-badge ${c.risk_level === 'High' ? 'risk-high' : 'risk-medium'}">${c.risk_level}</span></div>
+      <div class="prob-bar-bg"><div class="prob-bar-fill" style="width:${c.probability_pct}%;background:${c.probability_pct >= 65 ? 'linear-gradient(90deg,#d63c3c,#f87575)' : 'linear-gradient(90deg,#e8a020,#f5c95c)'}"></div></div>
+      <div class="prob-label"><span>${c.probability_pct}%</span><span>${c.specialty}</span></div>
+    </div>
+  `).join('');
+
+  const specialists = [...new Set(conditions.map(c => c.specialty))];
+  document.getElementById('patient-specialists').innerHTML = specialists.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+      <span style="font-size:20px">🏥</span>
+      <div>
+        <div style="font-weight:600;font-size:14px">${s}</div>
+        <div style="font-size:12px;color:var(--text-3)">Recommended based on results</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="showScreen('hospitals')">Find →</button>
+    </div>
+  `).join('');
+
+  // ── Report screen ──
+  document.getElementById('report-meta').innerHTML = `Report ID: ${r.report_id}<br>Date: ${new Date().toLocaleDateString('en-IN')}`;
+  document.getElementById('rp-name').textContent = r.patient_name;
+  document.getElementById('rp-age').textContent = `${document.getElementById('f-age').value}${document.getElementById('f-gender').value === 'female' ? 'F' : 'M'}`;
+  document.getElementById('rp-city').textContent = document.getElementById('f-city').value || '—';
+  document.getElementById('rp-risk').textContent = `${risk} (${score}%)`;
+  document.getElementById('report-conditions').innerHTML = conditions.slice(0, 5).map(c => `
+    <tr style="border-bottom:1px solid var(--surface-2)">
+      <td style="padding:7px 0">${c.disease}</td>
+      <td style="text-align:center;font-weight:700;color:${c.probability_pct >= 65 ? 'var(--red)' : 'var(--amber)'}">${c.probability_pct}%</td>
+      <td style="text-align:center"><span class="risk-badge ${c.probability_pct >= 65 ? 'risk-high' : 'risk-medium'}" style="font-size:10.5px">${c.risk_level.toUpperCase()}</span></td>
+    </tr>
+  `).join('');
+}
+
+// ════════════════════════════════════════════
+//  SHAP VISUALIZATION
+// ════════════════════════════════════════════
+function renderSHAP(condition) {
+  document.getElementById('shap-title').textContent = `SHAP — ${condition.disease}`;
+  const factors = condition.xai_factors || [];
+  const maxVal = Math.max(...factors.map(f => Math.abs(f.shap || 0.1)));
+
+  document.getElementById('shap-plot').innerHTML = factors.map(f => {
+    const pct = Math.round((Math.abs(f.shap) / maxVal) * 120);
+    const isPos = f.shap >= 0;
+    const sourceColors = { Blood: '#2e7dd6', Tabular: '#e8a020', Signal: '#0ea5a0', Text: '#7c5cbf' };
+    return `
+      <div class="shap-row">
+        <span class="shap-feature">${f.feature}</span>
+        <div class="shap-bar-container">
+          <div class="shap-bar ${isPos ? 'shap-pos' : 'shap-neg'}" style="width:${pct}px"></div>
+          <span class="shap-val">${isPos ? '+' : ''}${f.shap.toFixed(2)}</span>
+        </div>
+        <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${sourceColors[f.source]}22;color:${sourceColors[f.source]}">${f.source}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function showXAI(diseaseName) {
+  if (!lastResult) return;
+  const condition = lastResult.conditions.find(c => c.disease === diseaseName);
+  if (condition) {
+    renderSHAP(condition);
+    showScreen('explain');
+  }
+}
+
+// ════════════════════════════════════════════
+//  HOSPITALS
+// ════════════════════════════════════════════
+async function loadHospitals() {
+  const city = document.getElementById('hospital-city').value || 'Delhi';
+  const container = document.getElementById('hospital-cards');
+  container.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px">Loading...</div>';
+
+  let hospitals = [];
+  try {
+    if (!DEMO_MODE) {
+      const res = await fetch(`${API_BASE}/hospitals?city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      hospitals = data.hospitals;
+    } else {
+      throw new Error('demo');
+    }
+  } catch {
+    hospitals = [
+      { name: 'Apollo Hospital', address: `Greams Road, ${city}`, distance_km: 1.2, rating: 4.7, specialties: ['Cardiology', 'Endocrinology'], open: true },
+      { name: 'Govt. General Hospital', address: `Park Town, ${city}`, distance_km: 2.8, rating: 4.2, specialties: ['General Medicine', 'Cardiology'], open: true },
+      { name: 'Frontier Heart Clinic', address: `Anna Nagar, ${city}`, distance_km: 4.1, rating: 4.9, specialties: ['Cardiology', 'Cardiac Surgery'], open: false },
+    ];
+  }
+
+  document.getElementById('hospitals-subtitle').textContent = `Showing hospitals in ${city}`;
+  document.getElementById('map-popup-name').textContent = hospitals[0]?.name || 'Hospital';
+  document.getElementById('map-popup-dist').textContent = `📍 ${hospitals[0]?.distance_km || '?'} km away`;
+
+  const borderColors = ['var(--blue)', 'var(--teal)', 'var(--red)'];
+  container.innerHTML = hospitals.map((h, i) => `
+    <div class="card card-sm" style="border-left:4px solid ${borderColors[i % 3]}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:600;font-size:14.5px;color:var(--navy)">${h.name}</div>
+          <div style="font-size:12.5px;color:var(--text-2);margin:3px 0">${h.address} · ${h.open ? '🟢 Open' : '🔴 Closed'}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            ${(h.specialties || []).map(s => `<span class="tag tag-blue" style="font-size:11px">${s}</span>`).join('')}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--teal)">${h.distance_km} km</div>
+          <div style="font-size:12px;color:var(--text-3)">⭐ ${h.rating}</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm">Book Appointment</button>
+        <button class="btn btn-secondary btn-sm">Directions</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════════
+//  DEMO DATA FALLBACK
+// ════════════════════════════════════════════
+function getDemoResult(payload) {
+  return {
+    success: true,
+    report_id: 'DEMO-' + Math.random().toString(36).slice(2,8).toUpperCase(),
+    patient_name: payload.patient_name || 'Demo Patient',
+    analysis_timestamp: new Date().toISOString(),
+    processing_time_ms: 312,
+    overall_risk_score_pct: 67.4,
+    overall_risk_level: 'Medium',
+    conditions: [
+      { disease: 'Hypertensive Heart Disease', probability_pct: 74.2, risk_level: 'High', specialty: 'Cardiologist',
+        xai_factors: [
+          { feature: 'BP Systolic 138 mmHg', source: 'Blood', impact: 'high', shap: +0.38 },
+          { feature: 'Age 42 years', source: 'Tabular', impact: 'high', shap: +0.24 },
+          { feature: 'Family history of illness', source: 'Tabular', impact: 'medium', shap: +0.14 },
+          { feature: 'Symptom: chest pressure', source: 'Text', impact: 'medium', shap: +0.11 },
+          { feature: 'Active lifestyle', source: 'Tabular', impact: 'low', shap: -0.12 },
+        ]},
+      { disease: 'Type 2 Diabetes', probability_pct: 62.1, risk_level: 'Medium', specialty: 'Endocrinologist',
+        xai_factors: [
+          { feature: 'Fasting glucose 112 mg/dL', source: 'Blood', impact: 'high', shap: +0.32 },
+          { feature: 'BMI 27.4 (Overweight)', source: 'Tabular', impact: 'high', shap: +0.20 },
+          { feature: 'Sedentary lifestyle', source: 'Tabular', impact: 'medium', shap: +0.16 },
+          { feature: 'Symptom: fatigue', source: 'Text', impact: 'low', shap: +0.08 },
+        ]},
+      { disease: 'Iron Deficiency Anemia', probability_pct: 54.8, risk_level: 'Medium', specialty: 'Hematologist',
+        xai_factors: [
+          { feature: 'Hemoglobin 11.8 g/dL', source: 'Blood', impact: 'high', shap: +0.42 },
+          { feature: 'Female gender', source: 'Tabular', impact: 'medium', shap: +0.10 },
+        ]},
+      { disease: 'Metabolic Syndrome', probability_pct: 33.5, risk_level: 'Low', specialty: 'General Physician',
+        xai_factors: [
+          { feature: 'BMI 27.4', source: 'Tabular', impact: 'medium', shap: +0.15 },
+        ]},
+    ],
+    modality_weights: { text: 0.26, tabular: 0.54, signal: 0.20 },
+    recommendations: [
+      { priority: 'immediate', action: 'ECG and echocardiogram within 7 days', specialist: 'Cardiologist' },
+      { priority: 'soon', action: 'HbA1c test within 2 weeks; dietitian consultation', specialist: 'Endocrinologist' },
+      { priority: 'routine', action: 'Iron supplementation; repeat CBC in 4 weeks', specialist: 'Hematologist' },
+    ],
+    _demo: true,
+  };
+}
+
+// ════════════════════════════════════════════
+//  MISC HELPERS
+// ════════════════════════════════════════════
+function clearForm() {
+  ['f-name','f-age','f-hb','f-glucose','f-bp-sys','f-bp-dia','f-chol','f-tsh',
+   'f-weight','f-height','f-sleep','f-hr','f-spo2','f-steps','f-sleepq','f-stress','f-symptoms']
+  .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+}
+
+function printReport() {
+  window.print();
+}
+
+function selectLang(el) {
+  document.querySelectorAll('.lang-opt').forEach(l => l.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+document.getElementById('lang-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>

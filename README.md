@@ -1,4 +1,6 @@
-# 🏥 MediFuse — Multimodal Health Risk Assessment AI
+# 🏥 Human Disease Analyzer and Forecasting System  
+## 📱 App Name: MediFuse
+
 
 **Project Team ID:** MP2025CSE87  
 **Institution:** Graphic Era (Deemed to be University)  
